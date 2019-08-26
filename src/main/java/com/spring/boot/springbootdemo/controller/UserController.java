@@ -4,45 +4,46 @@ import com.spring.boot.springbootdemo.domain.User;
 import com.spring.boot.springbootdemo.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/user")
 public class UserController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/submit")
-    public Object submitUser(User user) {
+    @PostMapping(value = "/submit")
+    @ResponseBody
+    public Map<String, Object> submitUser(@RequestBody User user) {
 
         Map<String,Object> result = new HashMap<String, Object>();
         if(StringUtils.isBlank(user.getId())) {
             user.setId(UUID.randomUUID().toString().replaceAll("-", ""));
             userService.save(user);
+            result.put("msg", "添加成功");
         }else{
             userService.update(user);
+            result.put("msg", "修改成功");
         }
 
-
         result.put("success", true);
-        result.put("msg", "登录成功");
-        result.put("token", "adminxxxx");
+
         return result;
     }
 
-    @PostMapping("/userlist")
-    public List<User> userList(String filter){
+    @GetMapping("/userlist")
+    @ResponseBody
+    public List<User> userList(@RequestParam String filter){
         return userService.listUser(filter);
     }
 
-    @PostMapping("/delete")
-    public Map<String, Object> delete(String userId){
+    @DeleteMapping("/delete")
+    @ResponseBody
+    public Map<String, Object> delete(@RequestParam String userId){
         Map<String,Object> result = new HashMap<String, Object>();
         if(StringUtils.isNoneBlank(userId)) {
             userService.deleteByPrimarykey(userId);
